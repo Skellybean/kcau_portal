@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "KCA Virtual Campus",
+    "slug": "kca-virtual-campus",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": { "supportsTablet": false, "bundleIdentifier": "ke.ac.kcau.virtualcampus.demo" },
+    "android": { "package": "ke.ac.kcau.virtualcampus.demo" },
+    "plugins": ["expo-secure-store"]
+  }
+}
