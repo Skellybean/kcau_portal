@@ -3,13 +3,14 @@
 Everything environment-specific is read from environment variables so the same
 code runs locally (SQLite) and on Render (Supabase PostgreSQL).
 """
+from dotenv import load_dotenv
 import os
 from pathlib import Path
 
 import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+load_dotenv(BASE_DIR / ".env")
 
 def env_list(name, default=""):
     return [item.strip() for item in os.environ.get(name, default).split(",") if item.strip()]

@@ -5,8 +5,25 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "ios": { "supportsTablet": false, "bundleIdentifier": "ke.ac.kcau.virtualcampus.demo" },
-    "android": { "package": "ke.ac.kcau.virtualcampus.demo" },
-    "plugins": ["expo-secure-store"]
+    "icon": "./assets/icon.png",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "ke.ac.kcau.virtualcampus.demo"
+    },
+    "android": {
+      "package": "ke.ac.kcau.virtualcampus.demo",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#12233F"
+      }
+    },
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "983b5d4e-aebf-4810-b70c-77ee91dd0ad8"
+      }
+    }
   }
 }
