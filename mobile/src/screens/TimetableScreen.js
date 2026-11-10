@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
+import { useAuth } from "../auth/AuthContext";
 import { Banner, Card, Empty, Loading, PageTitle, Screen } from "../components";
+import { ClassPlace } from "../components/ClassMode";
 import { colors, space, type } from "../theme";
 import { DAY_NAMES, DAY_SHORT, clock, todayIndex } from "../utils/format";
 import { useResource } from "../useResource";
 
-export default function TimetableScreen() {
+export default function TimetableScreen({ navigation }) {
+  const { user } = useAuth();
+  const canEdit = user.role === "lecturer" || user.role === "admin";
   const { data, error, loading, refreshing, refresh } = useResource("/timetable/");
   const [day, setDay] = useState(todayIndex());
 
@@ -47,9 +51,8 @@ export default function TimetableScreen() {
               {clock(slot.start_time)} to {clock(slot.end_time)}
             </Text>
             <Text style={[type.heading, { marginTop: space.xs }]}>{slot.unit_title}</Text>
-            <Text style={[type.small, { marginTop: space.xs }]}>
-              {slot.unit_code}  |  {slot.venue}
-            </Text>
+            <Text style={[type.small, { marginTop: space.xs }]}>{slot.unit_code}</Text>
+            <ClassPlace slot={slot} onEdit={canEdit ? () => navigation.navigate("ClassLink", { slot }) : undefined} />
           </Card>
         ))
       )}

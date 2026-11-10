@@ -11,11 +11,12 @@ from rest_framework.views import APIView
 
 from .models import Announcement, Audience, Enrollment, Facility, Result, TimetableSlot, Unit
 from .sync import apply_registration
-from .permissions import IsAdminRoleOrReadOnly, IsStaffRoleOrReadOnly
+from .permissions import IsAdminRoleOrReadOnly, IsStaffRoleOrReadOnly, TimetablePermission
 from .serializers import (
     AnnouncementSerializer,
     FacilitySerializer,
     ResultSerializer,
+    TimetableLinkSerializer,
     TimetableSlotSerializer,
     UnitSerializer,
 )
@@ -57,8 +58,13 @@ class UnitViewSet(viewsets.ModelViewSet):
 
 
 class TimetableViewSet(viewsets.ModelViewSet):
-    serializer_class = TimetableSlotSerializer
-    permission_classes = [IsAdminRoleOrReadOnly]
+    permission_classes = [TimetablePermission]
+
+    def get_serializer_class(self):
+        user = self.request.user
+        if user.is_authenticated and user.is_lecturer and self.action in ("update", "partial_update"):
+            return TimetableLinkSerializer
+        return TimetableSlotSerializer
 
     def get_queryset(self):
         qs = TimetableSlot.objects.select_related("unit")

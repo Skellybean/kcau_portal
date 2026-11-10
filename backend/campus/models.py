@@ -78,12 +78,27 @@ class Weekday(models.IntegerChoices):
     SUNDAY = 6, "Sunday"
 
 
+class ClassMode(models.TextChoices):
+    IN_PERSON = "in_person", "In person"
+    ONLINE = "online", "Online"
+    HYBRID = "hybrid", "Hybrid"
+
+
+def validate_https_link(value):
+    """Class links must be https so the app never opens other kinds of link."""
+    if value and not value.lower().startswith("https://"):
+        raise ValidationError("The class link must start with https://")
+
+
 class TimetableSlot(models.Model):
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name="slots")
     day = models.PositiveSmallIntegerField(choices=Weekday.choices)
     start_time = models.TimeField()
     end_time = models.TimeField()
-    venue = models.CharField(max_length=120)
+    venue = models.CharField(max_length=120, blank=True, help_text="Required for in-person and hybrid classes")
+    mode = models.CharField(max_length=10, choices=ClassMode.choices, default=ClassMode.IN_PERSON)
+    meeting_link = models.URLField(max_length=500, blank=True, validators=[validate_https_link])
+    meeting_note = models.CharField(max_length=200, blank=True, help_text="Passcode or joining instructions")
 
     class Meta:
         ordering = ["day", "start_time"]
@@ -91,6 +106,15 @@ class TimetableSlot(models.Model):
     def clean(self):
         if self.start_time and self.end_time and self.end_time <= self.start_time:
             raise ValidationError("End time must be after start time.")
+        if self.mode in (ClassMode.IN_PERSON, ClassMode.HYBRID) and not self.venue.strip():
+            raise ValidationError({"venue": "A venue is required for in-person and hybrid classes."})
+
+    def save(self, *args, **kwargs):
+        # An in-person class has no link; clear it so an old link is never shown by mistake.
+        if self.mode == ClassMode.IN_PERSON:
+            self.meeting_link = ""
+            self.meeting_note = ""
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.unit.code} {self.get_day_display()} {self.start_time:%H:%M}"
@@ -174,7 +198,7 @@ class FacilityCategory(models.TextChoices):
     FOOD = "food", "Food and drink"
     HEALTH = "health", "Health and wellbeing"
     SERVICES = "services", "Student services"
-    SPORTS = "sports", "Sports and clubs"
+    SPORTS = "sports", "Sports and recreation"
 
 
 class Facility(models.Model):

@@ -19,7 +19,7 @@ python manage.py migrate
 python manage.py seed_demo            # sample users, units, timetable, results, notices, facilities
 python manage.py createsuperuser      # use a @kcau.ac.ke address
 python manage.py runserver 0.0.0.0:8000
-python manage.py test                 # 32 tests
+python manage.py test                 # 42 tests
 ```
 
 Verification codes print in the terminal while no SMTP server is configured.
@@ -87,6 +87,17 @@ Do not run `seed_demo` against production.
 | `POST/PATCH/DELETE /api/results/` | Lecturers (own units) and administrators |
 | `POST /api/announcements/` | Lecturers and administrators (only administrators can pin) |
 | `POST /api/portal/registrations/` | KCA portal, with `X-Portal-Key` |
+
+## Online and hybrid classes
+
+Each timetable slot is **In person**, **Online** or **Hybrid**. Online and hybrid slots can carry a class link (https only) and an optional passcode or instructions.
+
+- Students registered for a unit see a **Join class** button on the Timetable, Home (next class) and Unit screens. Students who are not registered never receive the link.
+- A lecturer opens a slot of a unit they teach and taps **Edit class link** to change the mode, link and passcode. Lecturers cannot change times, venues or other lecturers' slots.
+- Administrators can create slots and set all fields in the admin site.
+- An online class needs no venue and may be created before its link exists; students then see "The lecturer has not posted the class link yet." In-person and hybrid classes need a venue.
+
+After pulling this update run `python manage.py migrate`. `python manage.py seed_demo` refreshes the demo slots (DIT 210 online, DIT 214 hybrid).
 
 ## Known limits
 

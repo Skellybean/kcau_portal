@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "../auth/AuthContext";
 import { Loading } from "../components";
+import ClassLinkScreen from "../screens/ClassLinkScreen";
 import ComposeNoticeScreen from "../screens/ComposeNoticeScreen";
 import FacilitiesScreen from "../screens/FacilitiesScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
@@ -88,6 +89,7 @@ export default function Navigation() {
           <AppStack.Screen name="Results" component={ResultsScreen} options={{ title: "Results" }} />
           <AppStack.Screen name="Facilities" component={FacilitiesScreen} options={{ title: "Campus directory" }} />
           <AppStack.Screen name="Profile" component={ProfileScreen} options={{ title: "Profile" }} />
+          <AppStack.Screen name="ClassLink" component={ClassLinkScreen} options={{ title: "Class link" }} />
           <AppStack.Screen name="ComposeNotice" component={ComposeNoticeScreen} options={{ title: "New notice" }} />
         </AppStack.Navigator>
       ) : (

@@ -44,13 +44,14 @@ UNITS = [
     ("STU 701", "Programming Project", 4, 0),
 ]
 
+# (unit, weekday, start, end, venue, mode, link, note). Links are fictional placeholders.
 SLOTS = [
-    ("DIT 201", 0, time(8, 0), time(10, 0), "Lecture Hall 3"),
-    ("DIT 205", 0, time(11, 0), time(13, 0), "Computer Lab 2"),
-    ("DIT 210", 1, time(9, 0), time(11, 0), "Lecture Hall 1"),
-    ("DIT 214", 2, time(14, 0), time(16, 0), "Room B12"),
-    ("DIT 201", 3, time(8, 0), time(10, 0), "Computer Lab 1"),
-    ("STU 701", 4, time(10, 0), time(12, 0), "Project Studio"),
+    ("DIT 201", 0, time(8, 0), time(10, 0), "Lecture Hall 3", "in_person", "", ""),
+    ("DIT 205", 0, time(11, 0), time(13, 0), "Computer Lab 2", "in_person", "", ""),
+    ("DIT 210", 1, time(9, 0), time(11, 0), "", "online", "https://meet.example.com/dit210-demo", "Demo passcode: 2026"),
+    ("DIT 214", 2, time(14, 0), time(16, 0), "Room B12", "hybrid", "https://meet.example.com/dit214-demo", ""),
+    ("DIT 201", 3, time(8, 0), time(10, 0), "Computer Lab 1", "in_person", "", ""),
+    ("STU 701", 4, time(10, 0), time(12, 0), "Project Studio", "in_person", "", ""),
 ]
 
 # (student index, unit code, cat out of 30, exam out of 70)
@@ -138,9 +139,11 @@ class Command(BaseCommand):
                     student=student, unit=unit, trimester=settings.CURRENT_TRIMESTER
                 )
 
-        if not TimetableSlot.objects.exists():
-            for code, day, start, end, venue in SLOTS:
-                TimetableSlot.objects.create(unit=units[code], day=day, start_time=start, end_time=end, venue=venue)
+        for code, day, start, end, venue, mode, link, note in SLOTS:
+            TimetableSlot.objects.update_or_create(
+                unit=units[code], day=day, start_time=start,
+                defaults={"end_time": end, "venue": venue, "mode": mode, "meeting_link": link, "meeting_note": note},
+            )
 
         for index, code, cat, exam in RESULTS:
             Result.objects.update_or_create(

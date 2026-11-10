@@ -2,7 +2,7 @@ import React from "react";
 import { Text, View } from "react-native";
 
 import { useAuth } from "../auth/AuthContext";
-import { Banner, Card, Empty, Loading, PageTitle, Screen, Tag } from "../components";
+import { Banner, Button, Card, Empty, Loading, PageTitle, Screen, Tag } from "../components";
 import { space, type } from "../theme";
 import { useResource } from "../useResource";
 
@@ -14,7 +14,7 @@ export default function UnitsScreen({ navigation }) {
 
   const subtitle =
     user.role === "student"
-      ? "Registered on the KCA portal for this trimester"
+      ? "Units you are registered for this trimester"
       : user.role === "lecturer"
       ? "Units assigned to you"
       : "All units";
@@ -23,12 +23,15 @@ export default function UnitsScreen({ navigation }) {
     <Screen top onRefresh={refresh} refreshing={refreshing}>
       <PageTitle title="Units" subtitle={subtitle} />
       <Banner message={error} />
+      {user.role === "student" ? (
+        <Button title="Register or drop units" variant="secondary" onPress={() => navigation.navigate("RegisterUnits")} style={{ marginBottom: space.lg }} />
+      ) : null}
       {data && data.length === 0 ? (
         <Empty
           title="No units yet"
           message={
             user.role === "student"
-              ? "Units appear here after you register for them on the KCA portal. Pull down to refresh."
+              ? "Register for this trimester's units with the button above. Units you register for on the KCA portal appear here too."
               : "No units are assigned to you yet."
           }
         />

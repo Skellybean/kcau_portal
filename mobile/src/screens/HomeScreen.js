@@ -3,6 +3,7 @@ import { Text, View } from "react-native";
 
 import { useAuth } from "../auth/AuthContext";
 import { Banner, Card, Loading, Screen, SectionLabel, Tag } from "../components";
+import { ClassPlace } from "../components/ClassMode";
 import { colors, serif, space, type } from "../theme";
 import { clock, firstName, longDate, roleLabel, shortDate } from "../utils/format";
 import { useResource } from "../useResource";
@@ -49,7 +50,7 @@ export default function HomeScreen({ navigation }) {
               <Text style={[type.small, { marginTop: space.xs }]}>
                 {data.next_class.unit_code}  |  {clock(data.next_class.start_time)} to {clock(data.next_class.end_time)}
               </Text>
-              <Text style={[type.body, { marginTop: space.sm }]}>{data.next_class.venue}</Text>
+              <ClassPlace slot={data.next_class} />
             </Card>
           ) : (
             <Card>
@@ -71,7 +72,7 @@ export default function HomeScreen({ navigation }) {
                     </Text>
                     <View style={{ flex: 1 }}>
                       <Text style={type.body}>{slot.unit_title}</Text>
-                      <Text style={type.small}>{slot.venue}</Text>
+                      <Text style={type.small}>{slot.mode === "in_person" ? slot.venue : slot.mode === "online" ? "Online" : `Hybrid, ${slot.venue}`}</Text>
                     </View>
                   </View>
                 ))}

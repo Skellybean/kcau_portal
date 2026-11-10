@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from accounts.models import Role, User
 
-from .models import Announcement, Facility, Result, TimetableSlot, Unit
+from .models import Announcement, ClassMode, Facility, Result, TimetableSlot, Unit
 
 
 class UnitSerializer(serializers.ModelSerializer):
@@ -32,14 +32,35 @@ class TimetableSlotSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TimetableSlot
-        fields = ["id", "unit", "unit_code", "unit_title", "day", "day_name", "start_time", "end_time", "venue"]
+        fields = [
+            "id", "unit", "unit_code", "unit_title", "day", "day_name", "start_time", "end_time",
+            "venue", "mode", "meeting_link", "meeting_note",
+        ]
 
     def validate(self, attrs):
-        start = attrs.get("start_time", getattr(self.instance, "start_time", None))
-        end = attrs.get("end_time", getattr(self.instance, "end_time", None))
+        current = self.instance
+        start = attrs.get("start_time", getattr(current, "start_time", None))
+        end = attrs.get("end_time", getattr(current, "end_time", None))
         if start and end and end <= start:
             raise serializers.ValidationError("End time must be after start time.")
+
+        mode = attrs.get("mode", getattr(current, "mode", ClassMode.IN_PERSON))
+        venue = attrs.get("venue", getattr(current, "venue", ""))
+        if mode in (ClassMode.IN_PERSON, ClassMode.HYBRID) and not (venue or "").strip():
+            raise serializers.ValidationError(
+                "A venue is required for in-person and hybrid classes. Ask the administrator to add one."
+            )
+        if mode == ClassMode.IN_PERSON:
+            attrs["meeting_link"] = ""
+            attrs["meeting_note"] = ""
         return attrs
+
+
+class TimetableLinkSerializer(TimetableSlotSerializer):
+    """What a lecturer may change on a slot of their own unit: how it is held and how to join."""
+
+    class Meta(TimetableSlotSerializer.Meta):
+        read_only_fields = ["unit", "day", "start_time", "end_time", "venue"]
 
 
 class ResultSerializer(serializers.ModelSerializer):

@@ -38,8 +38,8 @@ class CampusAccessTests(TestCase):
         self.unit = Unit.objects.create(code="DIT 201", title="Databases", credits=3, lecturer=self.lec)
         self.other_unit = Unit.objects.create(code="DIT 210", title="Networks", credits=3, lecturer=self.other_lec)
         Enrollment.objects.create(student=self.s1, unit=self.unit, trimester=TRIMESTER)
-        TimetableSlot.objects.create(unit=self.unit, day=0, start_time=time(8), end_time=time(10), venue="LH1")
-        TimetableSlot.objects.create(unit=self.other_unit, day=1, start_time=time(8), end_time=time(10), venue="LH2")
+        self.slot = TimetableSlot.objects.create(unit=self.unit, day=0, start_time=time(8), end_time=time(10), venue="LH1")
+        self.other_slot = TimetableSlot.objects.create(unit=self.other_unit, day=1, start_time=time(8), end_time=time(10), venue="LH2")
         Result.objects.create(student=self.s1, unit=self.unit, cat_mark=25, exam_mark=50)
         Result.objects.create(student=self.s2, unit=self.unit, cat_mark=10, exam_mark=20)
 
@@ -207,3 +207,110 @@ class CampusAccessTests(TestCase):
         self.assertEqual(self.s1.role, "student")
         self.assertEqual(self.s1.email, "one@students.kcau.ac.ke")
         self.assertEqual(self.s1.full_name, "Renamed")
+
+
+LINK = "https://meet.example.com/dit201-demo"
+
+
+@override_settings(CURRENT_TRIMESTER=TRIMESTER)
+class OnlineClassTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.s1 = make_user("one@students.kcau.ac.ke", "student", "Student One")
+        self.s2 = make_user("two@students.kcau.ac.ke", "student", "Student Two")
+        self.lec = make_user("lec@kcau.ac.ke", "lecturer", "Lecturer")
+        self.other_lec = make_user("lec2@kcau.ac.ke", "lecturer", "Other Lecturer")
+        self.admin = make_user("admin@kcau.ac.ke", "admin", "Admin", is_staff=True)
+        self.unit = Unit.objects.create(code="DIT 201", title="Databases", credits=3, lecturer=self.lec)
+        self.other_unit = Unit.objects.create(code="DIT 210", title="Networks", credits=3, lecturer=self.other_lec)
+        Enrollment.objects.create(student=self.s1, unit=self.unit, trimester=TRIMESTER)
+        self.slot = TimetableSlot.objects.create(
+            unit=self.unit, day=0, start_time=time(8), end_time=time(10), venue="LH1"
+        )
+        self.other_slot = TimetableSlot.objects.create(
+            unit=self.other_unit, day=1, start_time=time(8), end_time=time(10), venue="LH2"
+        )
+
+    def new_slot(self, **extra):
+        payload = {"unit": self.unit.id, "day": 2, "start_time": "09:00", "end_time": "11:00"}
+        payload.update(extra)
+        return client_for(self.admin).post("/api/timetable/", payload, format="json")
+
+    def test_online_class_needs_no_venue_and_may_wait_for_its_link(self):
+        response = self.new_slot(mode="online")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["mode"], "online")
+        self.assertEqual(response.data["meeting_link"], "")
+
+    def test_in_person_and_hybrid_classes_need_a_venue(self):
+        self.assertEqual(self.new_slot(mode="in_person", venue="").status_code, 400)
+        self.assertEqual(self.new_slot(mode="hybrid", venue="", meeting_link=LINK).status_code, 400)
+        self.assertEqual(self.new_slot(mode="hybrid", venue="Room B12", meeting_link=LINK).status_code, 201)
+
+    def test_only_https_links_are_accepted(self):
+        for bad in ["http://meet.example.com/x", "javascript:alert(1)", "ftp://example.com/x", "meet.example.com/x"]:
+            response = self.new_slot(mode="online", meeting_link=bad)
+            self.assertEqual(response.status_code, 400, bad)
+        self.assertEqual(self.new_slot(mode="online", meeting_link=LINK).status_code, 201)
+
+    def test_lecturer_can_post_the_link_for_their_own_unit(self):
+        response = client_for(self.lec).patch(
+            f"/api/timetable/{self.slot.id}/",
+            {"mode": "online", "meeting_link": LINK, "meeting_note": "Passcode 1234"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.slot.refresh_from_db()
+        self.assertEqual((self.slot.mode, self.slot.meeting_link, self.slot.meeting_note), ("online", LINK, "Passcode 1234"))
+
+    def test_lecturer_cannot_touch_another_lecturers_slot(self):
+        response = client_for(self.lec).patch(
+            f"/api/timetable/{self.other_slot.id}/", {"mode": "online", "meeting_link": LINK}, format="json"
+        )
+        self.assertEqual(response.status_code, 404)
+        self.other_slot.refresh_from_db()
+        self.assertEqual(self.other_slot.meeting_link, "")
+
+    def test_lecturer_cannot_change_time_venue_or_unit(self):
+        client_for(self.lec).patch(
+            f"/api/timetable/{self.slot.id}/",
+            {"mode": "online", "meeting_link": LINK, "venue": "Hacked", "day": 4, "start_time": "01:00", "unit": self.other_unit.id},
+            format="json",
+        )
+        self.slot.refresh_from_db()
+        self.assertEqual(self.slot.venue, "LH1")
+        self.assertEqual(self.slot.day, 0)
+        self.assertEqual(self.slot.start_time, time(8))
+        self.assertEqual(self.slot.unit_id, self.unit.id)
+
+    def test_lecturers_cannot_create_or_delete_slots_and_students_cannot_edit(self):
+        payload = {"unit": self.unit.id, "day": 2, "start_time": "09:00", "end_time": "11:00", "venue": "X"}
+        self.assertEqual(client_for(self.lec).post("/api/timetable/", payload, format="json").status_code, 403)
+        self.assertEqual(client_for(self.lec).delete(f"/api/timetable/{self.slot.id}/").status_code, 403)
+        self.assertEqual(
+            client_for(self.s1).patch(f"/api/timetable/{self.slot.id}/", {"meeting_link": LINK}, format="json").status_code, 403
+        )
+
+    def test_students_only_see_links_for_units_they_registered_in(self):
+        for slot in (self.slot, self.other_slot):
+            slot.mode, slot.meeting_link = "online", LINK
+            slot.save()
+        seen = client_for(self.s1).get("/api/timetable/").data
+        self.assertEqual([(x["unit_code"], x["meeting_link"]) for x in seen], [("DIT 201", LINK)])
+        self.assertEqual(client_for(self.s2).get("/api/timetable/").data, [])
+
+    def test_switching_back_to_in_person_clears_the_link(self):
+        self.slot.mode, self.slot.meeting_link, self.slot.meeting_note = "online", LINK, "note"
+        self.slot.save()
+        response = client_for(self.admin).patch(f"/api/timetable/{self.slot.id}/", {"mode": "in_person"}, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual((response.data["meeting_link"], response.data["meeting_note"]), ("", ""))
+
+    def test_lecturer_cannot_switch_a_venue_less_slot_to_in_person(self):
+        online = TimetableSlot.objects.create(
+            unit=self.unit, day=3, start_time=time(9), end_time=time(11), venue="", mode="online", meeting_link=LINK
+        )
+        response = client_for(self.lec).patch(f"/api/timetable/{online.id}/", {"mode": "in_person"}, format="json")
+        self.assertEqual(response.status_code, 400)
+        online.refresh_from_db()
+        self.assertEqual(online.mode, "online")

@@ -1,12 +1,16 @@
 import React from "react";
 import { Text } from "react-native";
 
+import { useAuth } from "../auth/AuthContext";
 import { Card, Row, Screen, SectionLabel, Tag } from "../components";
+import { ClassPlace } from "../components/ClassMode";
 import { space, type } from "../theme";
 import { DAY_NAMES, clock } from "../utils/format";
 import { useResource } from "../useResource";
 
-export default function UnitDetailScreen({ route }) {
+export default function UnitDetailScreen({ route, navigation }) {
+  const { user } = useAuth();
+  const canEdit = user.role === "lecturer" || user.role === "admin";
   const { unit } = route.params;
   const { data } = useResource("/timetable/");
   const slots = (data || []).filter((slot) => slot.unit === unit.id);
@@ -32,8 +36,9 @@ export default function UnitDetailScreen({ route }) {
           <Card key={slot.id}>
             <Text style={type.heading}>{DAY_NAMES[slot.day]}</Text>
             <Text style={[type.small, { marginTop: space.xs }]}>
-              {clock(slot.start_time)} to {clock(slot.end_time)}  |  {slot.venue}
+              {clock(slot.start_time)} to {clock(slot.end_time)}
             </Text>
+            <ClassPlace slot={slot} onEdit={canEdit ? () => navigation.navigate("ClassLink", { slot }) : undefined} />
           </Card>
         ))
       )}
