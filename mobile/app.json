@@ -13,7 +13,7 @@
     "android": {
       "package": "ke.ac.kcau.virtualcampus.demo",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/feature.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#12233F"
       }
     },

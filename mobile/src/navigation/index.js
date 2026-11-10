@@ -17,6 +17,7 @@ import MoreScreen from "../screens/MoreScreen";
 import NoticesScreen from "../screens/NoticesScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import RegisterScreen from "../screens/RegisterScreen";
+import RegisterUnitsScreen from "../screens/RegisterUnitsScreen";
 import ResultsScreen from "../screens/ResultsScreen";
 import TimetableScreen from "../screens/TimetableScreen";
 import UnitDetailScreen from "../screens/UnitDetailScreen";
@@ -85,6 +86,7 @@ export default function Navigation() {
       {status === "signedIn" ? (
         <AppStack.Navigator screenOptions={headerOptions}>
           <AppStack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
+          <AppStack.Screen name="RegisterUnits" component={RegisterUnitsScreen} options={{ title: "Register units" }} />
           <AppStack.Screen name="UnitDetail" component={UnitDetailScreen} options={{ title: "Unit" }} />
           <AppStack.Screen name="Results" component={ResultsScreen} options={{ title: "Results" }} />
           <AppStack.Screen name="Facilities" component={FacilitiesScreen} options={{ title: "Campus directory" }} />
