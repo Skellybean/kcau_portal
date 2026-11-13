@@ -16,7 +16,7 @@ def fees_cleared(user):
         return True
     if not user.is_authenticated or not user.is_student:
         return True
-    from .models import FeeStatus
+    from .models_coursework import FeeStatus
 
     return FeeStatus.objects.filter(email__iexact=user.email, cleared=True).exists()
 
