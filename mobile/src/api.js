@@ -2,6 +2,7 @@ import { API_URL } from "./config";
 
 let token = null;
 let onUnauthorized = () => {};
+let onFeesLocked = () => {};
 
 export function setToken(value) {
   token = value;
@@ -9,6 +10,10 @@ export function setToken(value) {
 
 export function setUnauthorizedHandler(handler) {
   onUnauthorized = handler;
+}
+
+export function setFeesLockedHandler(handler) {
+  onFeesLocked = handler;
 }
 
 export class ApiError extends Error {
@@ -19,9 +24,10 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, { method = "GET", body, auth = true } = {}) {
+async function request(path, { method = "GET", body, auth = true, form } = {}) {
   const headers = { Accept: "application/json" };
-  if (body !== undefined) headers["Content-Type"] = "application/json";
+  // For multipart uploads the runtime sets the Content-Type (with its boundary) itself.
+  if (body !== undefined && !form) headers["Content-Type"] = "application/json";
   if (auth && token) headers.Authorization = `Token ${token}`;
 
   const controller = new AbortController();
@@ -31,7 +37,7 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
     response = await fetch(`${API_URL}/api${path}`, {
       method,
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: form ? body : body !== undefined ? JSON.stringify(body) : undefined,
       signal: controller.signal,
     });
   } catch (error) {
@@ -50,6 +56,7 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
 
   if (!response.ok) {
     if (response.status === 401 && auth && token) onUnauthorized();
+    if (response.status === 403 && data && data.code === "fees_outstanding") onFeesLocked();
     const message =
       (data && typeof data.detail === "string" && data.detail) ||
       (response.status === 429 ? "Too many attempts. Wait a minute and try again." : "Something went wrong. Please try again.");
@@ -61,6 +68,9 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
 export const api = {
   get: (path) => request(path),
   post: (path, body, options) => request(path, { method: "POST", body: body ?? {}, ...options }),
+  postForm: (path, formData) => request(path, { method: "POST", body: formData, form: true }),
   patch: (path, body) => request(path, { method: "PATCH", body }),
   del: (path) => request(path, { method: "DELETE" }),
 };
+
+export default api;

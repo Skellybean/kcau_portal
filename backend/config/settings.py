@@ -129,6 +129,9 @@ CURRENT_TRIMESTER = os.environ.get("CURRENT_TRIMESTER", "2026 Trimester 3")
 # off while this is empty.
 PORTAL_SYNC_KEY = os.environ.get("PORTAL_SYNC_KEY", "")
 
+# Students with outstanding fees are locked out of the campus. Set FEE_GATE_ENABLED=0 to switch the gate off (for example for a demo).
+FEE_GATE_ENABLED = os.environ.get("FEE_GATE_ENABLED", "1").lower() not in ("0", "false", "no", "off")
+
 VERIFICATION_CODE_TTL_MINUTES = 15
 VERIFICATION_MAX_ATTEMPTS = 5
 
@@ -148,7 +151,7 @@ DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "KCA Virtual Campus <n
 # --- REST framework --------------------------------------------------------
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.TokenAuthentication"],
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated", "campus.permissions.FeesCleared"],
     "DEFAULT_THROTTLE_CLASSES": ["rest_framework.throttling.ScopedRateThrottle"],
     "DEFAULT_THROTTLE_RATES": {"auth": "20/min", "code": "5/min"},
     "DEFAULT_PAGINATION_CLASS": None,

@@ -14,7 +14,7 @@
       "package": "ke.ac.kcau.virtualcampus.demo",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#12233F"
+        "backgroundColor": "#1F4D3A"
       }
     },
     "plugins": [

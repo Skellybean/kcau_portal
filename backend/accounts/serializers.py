@@ -18,10 +18,17 @@ class KCAEmailField(serializers.EmailField):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    fees_cleared = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id", "email", "full_name", "role", "admission_number", "programme", "year_of_study"]
-        read_only_fields = ["id", "email", "role", "admission_number"]
+        fields = ["id", "email", "full_name", "role", "admission_number", "programme", "year_of_study", "fees_cleared"]
+        read_only_fields = ["id", "email", "role", "admission_number", "fees_cleared"]
+
+    def get_fees_cleared(self, user):
+        from campus.permissions import fees_cleared  # imported here: campus depends on accounts
+
+        return fees_cleared(user)
 
 
 class RegisterSerializer(serializers.Serializer):

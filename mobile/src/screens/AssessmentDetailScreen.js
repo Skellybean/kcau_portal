@@ -3,6 +3,7 @@ import { ScrollView, View, Text, TextInput, TouchableOpacity, Alert, ActivityInd
 import * as DocumentPicker from "expo-document-picker";
 import api from "../api";
 import { dateTime } from "../utils/dates";
+import { colors } from "../theme";
 
 export default function AssessmentDetailScreen({ route }) {
   const { id } = route.params;
@@ -89,7 +90,7 @@ export default function AssessmentDetailScreen({ route }) {
           )}
           {!!error && <Text style={s.error}>{error}</Text>}
           <TouchableOpacity style={s.submit} onPress={confirm} disabled={busy}>
-            {busy ? <ActivityIndicator color="#fff" /> : <Text style={s.submitText}>{mine ? "Resubmit" : "Submit"}</Text>}
+            {busy ? <ActivityIndicator color={colors.primaryText} /> : <Text style={s.submitText}>{mine ? "Resubmit" : "Submit"}</Text>}
           </TouchableOpacity>
         </>
       ) : (
@@ -100,19 +101,19 @@ export default function AssessmentDetailScreen({ route }) {
 }
 
 const s = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: "#f4f6f9" },
+  wrap: { flex: 1, backgroundColor: colors.paper },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  kind: { color: "#1a4d8f", fontWeight: "600" },
+  kind: { color: colors.primary, fontWeight: "600" },
   title: { fontSize: 22, fontWeight: "700", marginTop: 4 },
-  meta: { color: "#666", marginTop: 4 },
+  meta: { color: colors.inkSoft, marginTop: 4 },
   body: { marginTop: 14, fontSize: 16, lineHeight: 22 },
-  info: { marginTop: 14, color: "#555" },
-  marked: { backgroundColor: "#e3f6e8", padding: 12, borderRadius: 8, marginTop: 14 },
+  info: { marginTop: 14, color: colors.inkSoft },
+  marked: { backgroundColor: colors.successSoft, padding: 12, borderRadius: 8, marginTop: 14 },
   markedTitle: { fontWeight: "700", marginBottom: 4 },
-  input: { backgroundColor: "#fff", borderRadius: 8, minHeight: 140, padding: 12, marginTop: 16, fontSize: 16 },
-  attach: { backgroundColor: "#fff", borderRadius: 8, padding: 14, marginTop: 12, borderWidth: 1, borderColor: "#cdd6e4", borderStyle: "dashed" },
-  attachText: { color: "#1a4d8f" },
-  error: { color: "#b00020", marginTop: 10 },
-  submit: { backgroundColor: "#1a4d8f", padding: 14, borderRadius: 10, alignItems: "center", marginTop: 16 },
-  submitText: { color: "#fff", fontWeight: "600", fontSize: 16 },
+  input: { backgroundColor: colors.surface, borderRadius: 8, minHeight: 140, padding: 12, marginTop: 16, fontSize: 16 },
+  attach: { backgroundColor: colors.surface, borderRadius: 8, padding: 14, marginTop: 12, borderWidth: 1, borderColor: colors.line, borderStyle: "dashed" },
+  attachText: { color: colors.primary },
+  error: { color: colors.danger, marginTop: 10 },
+  submit: { backgroundColor: colors.primary, padding: 14, borderRadius: 10, alignItems: "center", marginTop: 16 },
+  submitText: { color: colors.primaryText, fontWeight: "600", fontSize: 16 },
 });

@@ -9,6 +9,7 @@ email code. Do not run this against a production database.
 from datetime import time
 
 from django.conf import settings
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -175,6 +176,8 @@ class Command(BaseCommand):
                     location=location, opening_hours=hours, contact=contact,
                 )
 
+        # Fee statuses, assignments and exam slots, so students are not locked out by the fee gate.
+        call_command("seed_coursework")
         self.stdout.write(self.style.SUCCESS("Demo data loaded."))
         self.stdout.write(f"  Student:  demo.student1@{STUDENT_DOMAIN}")
         self.stdout.write(f"  Lecturer: demo.lecturer1@{STAFF_DOMAIN}")

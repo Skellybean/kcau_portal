@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet } fr
 import { useFocusEffect } from "@react-navigation/native";
 import api from "../api";
 import { dateTime } from "../utils/dates";
+import { colors } from "../theme";
 
 function status(a) {
   const m = a.my_submission;
@@ -54,13 +55,13 @@ export default function AssessmentsScreen({ navigation }) {
 }
 
 const s = StyleSheet.create({
-  list: { flex: 1, backgroundColor: "#f4f6f9" },
-  empty: { textAlign: "center", marginTop: 40, color: "#666", paddingHorizontal: 24 },
-  card: { backgroundColor: "#fff", margin: 12, marginBottom: 0, padding: 14, borderRadius: 10 },
-  kind: { color: "#1a4d8f", fontWeight: "600", fontSize: 12 },
+  list: { flex: 1, backgroundColor: colors.paper },
+  empty: { textAlign: "center", marginTop: 40, color: colors.inkSoft, paddingHorizontal: 24 },
+  card: { backgroundColor: colors.surface, margin: 12, marginBottom: 0, padding: 14, borderRadius: 10 },
+  kind: { color: colors.primary, fontWeight: "600", fontSize: 12 },
   title: { fontSize: 17, fontWeight: "600", marginTop: 4 },
-  meta: { color: "#666", marginTop: 4 },
-  tag: { alignSelf: "flex-start", marginTop: 8, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, backgroundColor: "#e6eefb", color: "#1a4d8f", fontSize: 12, overflow: "hidden" },
-  open: { backgroundColor: "#e3f6e8", color: "#1b6b35" },
-  closed: { backgroundColor: "#eee", color: "#666" },
+  meta: { color: colors.inkSoft, marginTop: 4 },
+  tag: { alignSelf: "flex-start", marginTop: 8, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, backgroundColor: colors.accentSoft, color: colors.primary, fontSize: 12, overflow: "hidden" },
+  open: { backgroundColor: colors.successSoft, color: colors.success },
+  closed: { backgroundColor: colors.line, color: colors.inkSoft },
 });

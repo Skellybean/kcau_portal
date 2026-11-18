@@ -7,12 +7,17 @@ from rest_framework.test import APIClient
 
 from accounts.models import User
 
-from .models import Announcement, Enrollment, PendingRegistration, Result, TimetableSlot, Unit
+from .models import Announcement, Enrollment, Facility, PendingRegistration, Result, TimetableSlot, Unit
+from .models_coursework import FeeStatus
 from .sync import claim_pending
 
 
 def make_user(email, role, name, **extra):
-    return User.objects.create_user(email, "Sturdy#Pass2026", full_name=name, role=role, is_verified=True, **extra)
+    user = User.objects.create_user(email, "Sturdy#Pass2026", full_name=name, role=role, is_verified=True, **extra)
+    if role == "student":
+        # Students need cleared fees to use the campus (see FeeGateTests for the locked case).
+        FeeStatus.objects.update_or_create(email=email, defaults={"cleared": True})
+    return user
 
 
 def client_for(user):
@@ -314,3 +319,28 @@ class OnlineClassTests(TestCase):
         self.assertEqual(response.status_code, 400)
         online.refresh_from_db()
         self.assertEqual(online.mode, "online")
+
+
+class CampusDirectoryTests(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.student = make_user("dir@students.kcau.ac.ke", "student", "Student")
+        self.admin = make_user("dir.admin@kcau.ac.ke", "admin", "Admin", is_staff=True)
+        Facility.objects.create(name="Main Library", category="library", location="Block B, ground floor", opening_hours="8am to 9pm")
+        Facility.objects.create(name="Cafeteria", category="food", location="Near the main gate")
+
+    def test_signed_in_users_can_list_and_search_facilities(self):
+        client = client_for(self.student)
+        self.assertEqual(len(client.get("/api/facilities/").data), 2)
+        found = client.get("/api/facilities/?search=library").data
+        self.assertEqual([f["name"] for f in found], ["Main Library"])
+        by_category = client.get("/api/facilities/?category=food").data
+        self.assertEqual([f["name"] for f in by_category], ["Cafeteria"])
+
+    def test_directory_needs_sign_in(self):
+        self.assertEqual(APIClient().get("/api/facilities/").status_code, 401)
+
+    def test_only_admin_changes_the_directory(self):
+        body = {"name": "Clinic", "category": "health", "location": "Block C"}
+        self.assertEqual(client_for(self.student).post("/api/facilities/", body, format="json").status_code, 403)
+        self.assertEqual(client_for(self.admin).post("/api/facilities/", body, format="json").status_code, 201)

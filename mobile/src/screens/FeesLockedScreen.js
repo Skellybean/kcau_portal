@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { useAuth } from "../auth/AuthContext";
+import { colors } from "../theme";
 
 // Shown instead of the whole campus when a student's fees are outstanding.
-// Expects useAuth() to provide { user, logout, refreshUser }.
 export default function FeesLockedScreen() {
-  const { logout, refreshUser } = useAuth();
+  const { signOut, refreshUser } = useAuth();
   const [checking, setChecking] = useState(false);
 
   const check = async () => {
     setChecking(true);
-    try { await refreshUser(); } finally { setChecking(false); }
+    try { await refreshUser(); } catch (e) { /* offline: stay locked, the button can be pressed again */ } finally { setChecking(false); }
   };
 
   return (
@@ -21,9 +21,9 @@ export default function FeesLockedScreen() {
         Please settle your balance with the finance office. It can take a short while to reflect here.
       </Text>
       <TouchableOpacity style={s.primary} onPress={check} disabled={checking}>
-        {checking ? <ActivityIndicator color="#fff" /> : <Text style={s.primaryText}>Check again</Text>}
+        {checking ? <ActivityIndicator color={colors.primaryText} /> : <Text style={s.primaryText}>Check again</Text>}
       </TouchableOpacity>
-      <TouchableOpacity style={s.secondary} onPress={logout}>
+      <TouchableOpacity style={s.secondary} onPress={signOut}>
         <Text style={s.secondaryText}>Sign out</Text>
       </TouchableOpacity>
     </View>
@@ -31,11 +31,11 @@ export default function FeesLockedScreen() {
 }
 
 const s = StyleSheet.create({
-  wrap: { flex: 1, justifyContent: "center", padding: 24, backgroundColor: "#fff" },
+  wrap: { flex: 1, justifyContent: "center", padding: 24, backgroundColor: colors.surface },
   title: { fontSize: 24, fontWeight: "700", marginBottom: 12 },
-  body: { fontSize: 16, lineHeight: 23, color: "#444", marginBottom: 28 },
-  primary: { backgroundColor: "#1a4d8f", padding: 14, borderRadius: 10, alignItems: "center", marginBottom: 12 },
-  primaryText: { color: "#fff", fontWeight: "600", fontSize: 16 },
+  body: { fontSize: 16, lineHeight: 23, color: colors.inkSoft, marginBottom: 28 },
+  primary: { backgroundColor: colors.primary, padding: 14, borderRadius: 10, alignItems: "center", marginBottom: 12 },
+  primaryText: { color: colors.primaryText, fontWeight: "600", fontSize: 16 },
   secondary: { padding: 14, alignItems: "center" },
-  secondaryText: { color: "#1a4d8f", fontSize: 16 },
+  secondaryText: { color: colors.primary, fontSize: 16 },
 });

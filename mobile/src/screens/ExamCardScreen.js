@@ -3,6 +3,7 @@ import { ScrollView, View, Text, StyleSheet } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import api from "../api";
 import { examDate, shortTime } from "../utils/dates";
+import { colors } from "../theme";
 
 export default function ExamCardScreen() {
   const [card, setCard] = useState(null);
@@ -42,14 +43,14 @@ export default function ExamCardScreen() {
 }
 
 const s = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: "#f4f6f9" },
+  wrap: { flex: 1, backgroundColor: colors.paper },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  card: { backgroundColor: "#fff", borderRadius: 12, padding: 18, borderWidth: 2, borderColor: "#1a4d8f" },
-  heading: { fontSize: 20, fontWeight: "800", color: "#1a4d8f", textAlign: "center" },
-  trim: { textAlign: "center", color: "#666", marginBottom: 14 },
+  card: { backgroundColor: colors.surface, borderRadius: 12, padding: 18, borderWidth: 2, borderColor: colors.primary },
+  heading: { fontSize: 20, fontWeight: "800", color: colors.primary, textAlign: "center" },
+  trim: { textAlign: "center", color: colors.inkSoft, marginBottom: 14 },
   name: { fontSize: 18, fontWeight: "700" },
-  meta: { color: "#444", marginTop: 3 },
-  rule: { height: 1, backgroundColor: "#dde3ee", marginVertical: 14 },
+  meta: { color: colors.inkSoft, marginTop: 3 },
+  rule: { height: 1, backgroundColor: colors.line, marginVertical: 14 },
   unit: { marginBottom: 12 },
   unitTitle: { fontWeight: "600", fontSize: 15 },
 });

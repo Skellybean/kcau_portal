@@ -9,7 +9,11 @@ import { roleLabel } from "../utils/format";
 export default function MoreScreen({ navigation }) {
   const { user, signOut } = useAuth();
 
+  const isStudent = user.role === "student";
   const items = [
+    { label: "Assignments and CATs", note: isStudent ? "View work and submit your answers" : "Work set for your units", screen: "Assessments" },
+    { label: "Exam timetable", note: "Dates, times and venues", screen: "ExamTimetable" },
+    ...(isStudent ? [{ label: "Exam card", note: "Your units and where you sit each exam", screen: "ExamCard" }] : []),
     { label: "Results", note: user.role === "student" ? "CAT, exam and grades" : "Results for your units", screen: "Results" },
     { label: "Campus directory", note: "Library, labs, clinic, food and services", screen: "Facilities" },
     { label: "Profile", note: `${roleLabel(user.role)}, ${user.email}`, screen: "Profile" },

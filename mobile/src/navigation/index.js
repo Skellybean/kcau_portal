@@ -7,9 +7,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "../auth/AuthContext";
 import { Loading } from "../components";
+import AssessmentDetailScreen from "../screens/AssessmentDetailScreen";
+import AssessmentsScreen from "../screens/AssessmentsScreen";
 import ClassLinkScreen from "../screens/ClassLinkScreen";
 import ComposeNoticeScreen from "../screens/ComposeNoticeScreen";
+import ExamCardScreen from "../screens/ExamCardScreen";
+import ExamTimetableScreen from "../screens/ExamTimetableScreen";
 import FacilitiesScreen from "../screens/FacilitiesScreen";
+import FeesLockedScreen from "../screens/FeesLockedScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 import HomeScreen from "../screens/HomeScreen";
 import LoginScreen from "../screens/LoginScreen";
@@ -78,16 +83,27 @@ function MainTabs() {
 }
 
 export default function Navigation() {
-  const { status } = useAuth();
+  const { status, user } = useAuth();
   if (status === "loading") return <Loading />;
+
+  // Students whose fees are outstanding see only the lock screen. The server enforces the same rule.
+  const locked = status === "signedIn" && user?.role === "student" && user.fees_cleared === false;
 
   return (
     <NavigationContainer theme={navTheme}>
-      {status === "signedIn" ? (
+      {locked ? (
+        <AppStack.Navigator screenOptions={{ ...headerOptions, headerShown: false }}>
+          <AppStack.Screen name="FeesLocked" component={FeesLockedScreen} />
+        </AppStack.Navigator>
+      ) : status === "signedIn" ? (
         <AppStack.Navigator screenOptions={headerOptions}>
           <AppStack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
           <AppStack.Screen name="RegisterUnits" component={RegisterUnitsScreen} options={{ title: "Register units" }} />
           <AppStack.Screen name="UnitDetail" component={UnitDetailScreen} options={{ title: "Unit" }} />
+          <AppStack.Screen name="Assessments" component={AssessmentsScreen} options={{ title: "Assignments and CATs" }} />
+          <AppStack.Screen name="AssessmentDetail" component={AssessmentDetailScreen} options={{ title: "Assignment" }} />
+          <AppStack.Screen name="ExamTimetable" component={ExamTimetableScreen} options={{ title: "Exam timetable" }} />
+          <AppStack.Screen name="ExamCard" component={ExamCardScreen} options={{ title: "Exam card" }} />
           <AppStack.Screen name="Results" component={ResultsScreen} options={{ title: "Results" }} />
           <AppStack.Screen name="Facilities" component={FacilitiesScreen} options={{ title: "Campus directory" }} />
           <AppStack.Screen name="Profile" component={ProfileScreen} options={{ title: "Profile" }} />

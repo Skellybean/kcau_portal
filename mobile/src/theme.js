@@ -1,19 +1,20 @@
 import { Platform } from "react-native";
 
 export const colors = {
-  paper: "#F5F1E8",
-  surface: "#FFFFFF",
-  ink: "#17212B",
-  inkSoft: "#4A5663",
-  muted: "#7B8590",
-  line: "#E2DCCD",
-  primary: "#133552",
-  primaryText: "#FFFFFF",
-  accent: "#B4701B",
-  accentSoft: "#F3E6D0",
+  paper: "#EBE3CF",
+  surface: "#F8F3E6",
+  ink: "#1E2A22",
+  inkSoft: "#46554B",
+  muted: "#56665A",
+  line: "#D2C7AC",
+  primary: "#1F4D3A",
+  primaryText: "#F8F3E6",
+  accent: "#8F520E",
+  accentSoft: "#EFDFBA",
   danger: "#A3321F",
-  dangerSoft: "#F6E1DC",
-  success: "#2F6B4F",
+  dangerSoft: "#F1D9CF",
+  success: "#2F6B3A",
+  successSoft: "#DCE8CF",
 };
 
 export const serif = Platform.select({ ios: "Georgia", android: "serif", default: "Georgia, serif" });

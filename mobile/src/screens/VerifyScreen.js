@@ -4,7 +4,7 @@ import { Text } from "react-native";
 import { api } from "../api";
 import { useAuth } from "../auth/AuthContext";
 import { Banner, Button, Screen, TextField } from "../components";
-import { space, type } from "../theme";
+import { colors, space, type } from "../theme";
 
 const COOLDOWN = 30;
 
@@ -54,7 +54,7 @@ export default function VerifyScreen({ route }) {
   return (
     <Screen keyboard>
       <Text style={[type.title, { marginBottom: space.sm }]}>Check your inbox</Text>
-      <Text style={[type.body, { color: "#4A5663", marginBottom: space.xl }]}>
+      <Text style={[type.body, { color: colors.inkSoft, marginBottom: space.xl }]}>
         We sent a 6-digit code to {email}. It expires in 15 minutes.
       </Text>
       <Banner message={banner} />

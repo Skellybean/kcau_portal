@@ -1,11 +1,9 @@
 """Tests for the fee gate, coursework submissions, exam timetable and exam card.
 
-NOTE: these were written without being run against the real repo. If `make()` below does not
-match your User model's create_user signature, adjust that one helper (or swap in make_user
-from campus/tests.py).
 """
 from datetime import date, time, timedelta
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
@@ -13,7 +11,7 @@ from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
-from .models import Unit
+from .models import Enrollment, Unit
 from .models_coursework import Assessment, ExamSlot, FeeStatus, Submission
 
 User = get_user_model()
@@ -37,7 +35,7 @@ class Base(TestCase):
         self.admin = make("adm@kcau.ac.ke", "admin")
         self.student = make(STUDENT, "student")
         self.unit = Unit.objects.create(code="DIT 201", title="Databases", credits=3, lecturer=self.lecturer)
-        self.unit.students.add(self.student) if hasattr(self.unit, "students") else None
+        Enrollment.objects.create(student=self.student, unit=self.unit, trimester=settings.CURRENT_TRIMESTER)
         FeeStatus.objects.create(email=STUDENT, cleared=True)
         self.cat = Assessment.objects.create(
             unit=self.unit, kind="cat", title="CAT 1", due_at=timezone.now() + timedelta(days=3),
@@ -140,7 +138,6 @@ class SubmissionTests(Base):
 class ExamTests(Base):
     def setUp(self):
         super().setUp()
-        from django.conf import settings
         ExamSlot.objects.create(
             unit=self.unit, trimester=settings.CURRENT_TRIMESTER, date=date.today() + timedelta(days=20),
             start_time=time(9), end_time=time(12), venue="Main Hall",

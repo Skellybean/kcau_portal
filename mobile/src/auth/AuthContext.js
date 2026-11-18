@@ -1,7 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-import { api, setToken, setUnauthorizedHandler } from "../api";
+import { api, setFeesLockedHandler, setToken, setUnauthorizedHandler } from "../api";
 
 const TOKEN_KEY = "kca.virtualcampus.token";
 const AuthContext = createContext(null);
@@ -22,6 +22,10 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     setUnauthorizedHandler(() => {
       clearSession();
+    });
+    // The server says fees are outstanding: lock the campus without waiting for a restart.
+    setFeesLockedHandler(() => {
+      setState((s) => (s.user ? { ...s, user: { ...s.user, fees_cleared: false } } : s));
     });
     (async () => {
       try {
@@ -62,7 +66,17 @@ export function AuthProvider({ children }) {
 
   const updateUser = useCallback((user) => setState((s) => ({ ...s, user })), []);
 
-  const value = useMemo(() => ({ ...state, signIn, signOut, updateUser }), [state, signIn, signOut, updateUser]);
+  // Re-read the account, for example to see whether fees have been cleared since.
+  const refreshUser = useCallback(async () => {
+    const user = await api.get("/auth/me/");
+    setState((s) => ({ ...s, user }));
+    return user;
+  }, []);
+
+  const value = useMemo(
+    () => ({ ...state, signIn, signOut, updateUser, refreshUser }),
+    [state, signIn, signOut, updateUser, refreshUser]
+  );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

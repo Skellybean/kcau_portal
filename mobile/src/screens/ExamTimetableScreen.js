@@ -3,6 +3,7 @@ import { SectionList, Text, View, RefreshControl, StyleSheet } from "react-nativ
 import { useFocusEffect } from "@react-navigation/native";
 import api from "../api";
 import { examDate, shortTime } from "../utils/dates";
+import { colors } from "../theme";
 
 export default function ExamTimetableScreen() {
   const [sections, setSections] = useState([]);
@@ -46,10 +47,10 @@ export default function ExamTimetableScreen() {
 }
 
 const s = StyleSheet.create({
-  list: { flex: 1, backgroundColor: "#f4f6f9" },
-  empty: { textAlign: "center", marginTop: 40, color: "#666", paddingHorizontal: 24 },
-  header: { padding: 12, paddingTop: 18, fontWeight: "700", color: "#1a4d8f" },
-  card: { backgroundColor: "#fff", marginHorizontal: 12, marginBottom: 8, padding: 14, borderRadius: 10 },
+  list: { flex: 1, backgroundColor: colors.paper },
+  empty: { textAlign: "center", marginTop: 40, color: colors.inkSoft, paddingHorizontal: 24 },
+  header: { padding: 12, paddingTop: 18, fontWeight: "700", color: colors.primary },
+  card: { backgroundColor: colors.surface, marginHorizontal: 12, marginBottom: 8, padding: 14, borderRadius: 10 },
   unit: { fontSize: 16, fontWeight: "600" },
-  meta: { color: "#666", marginTop: 4 },
+  meta: { color: colors.inkSoft, marginTop: 4 },
 });
