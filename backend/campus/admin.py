@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from .models import Announcement, Enrollment, Facility, PendingRegistration, Result, TimetableSlot, Unit
+from . import admin_coursework
 
 
 @admin.register(Unit)
